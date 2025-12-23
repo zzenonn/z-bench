@@ -148,6 +148,7 @@ class BenchmarkRunner:
             print(f"\rWarmup {i}/{len(warmup_files)}: {filepath.name}", end="", flush=True)
             
             cmd = cmd_template.replace('{file}', str(filepath))
+            cmd = cmd.replace('{filename}', filepath.name)
             success, error, latency_ns = self.execute_command(cmd, filepath.name)
             
             result = {
@@ -183,6 +184,7 @@ class BenchmarkRunner:
             print(f"\r[{bar}] {percent:3d}% ({i}/{len(files)}) {filepath.name}", end="", flush=True)
             
             cmd = cmd_template.replace('{file}', str(filepath))
+            cmd = cmd.replace('{filename}', filepath.name)
             success, error, latency_ns = self.execute_command(cmd, filepath.name)
             
             result = {

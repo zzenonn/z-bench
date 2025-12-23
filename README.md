@@ -37,13 +37,13 @@ z-bench generate --output-dir ./testfiles --file-size 10MB --total-size 1GB
 
 ```bash
 # PUT benchmark
-z-bench benchmark --op put --input-dir ./testfiles --put-cmd "aws s3 cp {file} s3://{bucket}/" --out results.csv
+z-bench benchmark --op put --input-dir ./testfiles --put-cmd "aws s3 cp {file} s3://<bucket>/" --out results.csv
 
 # GET benchmark  
-z-bench benchmark --op get --input-dir ./testfiles --get-cmd "aws s3 cp s3://{bucket}/{file} ./downloads/" --out results.csv
+z-bench benchmark --op get --input-dir ./testfiles --get-cmd "aws s3 cp s3://<bucket>/{file} ./downloads/" --out results.csv
 
 # DELETE benchmark
-z-bench benchmark --op delete --input-dir ./testfiles --del-cmd "aws s3 rm s3://{bucket}/{file}" --out results.csv
+z-bench benchmark --op delete --input-dir ./testfiles --del-cmd "aws s3 rm s3://<bucket>/{file}" --out results.csv
 ```
 
 ### 3. Full Cycle Benchmark
@@ -51,6 +51,8 @@ z-bench benchmark --op delete --input-dir ./testfiles --del-cmd "aws s3 rm s3://
 ```bash
 z-bench --ALL --output-dir ./testfiles --file-size 10MB --total-size 1GB --out results.csv
 ```
+
+**Note:** Replace `<bucket>` with your actual bucket name in the command templates.
 
 ## Development Mode
 
@@ -109,13 +111,13 @@ Combines generation and all benchmark operations with automatic sequencing.
 
 Use placeholders in command templates:
 
-- `{file}` - File name or path
-- `{bucket}` - Bucket name (you need to specify this in your commands)
+- `{file}` - **Automatic replacement** with actual file path by z-bench
+- `<bucket>` - **Manual replacement** required - replace with your actual bucket name
 
 Examples:
-- AWS S3: `aws s3 cp {file} s3://mybucket/`
-- MinIO: `mc cp {file} myminio/mybucket/`
-- Azure: `az storage blob upload --file {file} --container mybucket`
+- AWS S3: `aws s3 cp {file} s3://my-actual-bucket/`
+- MinIO: `mc cp {file} myminio/my-bucket/`
+- Azure: `az storage blob upload --file {file} --container my-container`
 
 ## Output Format
 
@@ -123,14 +125,21 @@ Results are logged per-operation with the following fields:
 
 | Field | Description |
 |-------|-------------|
-| `timestamp_ns` | Monotonic start timestamp |
-| `operation` | PUT / GET / DELETE |
-| `filename` | File name or path |
-| `size_bytes` | File size |
-| `latency_ns` | Duration of operation |
-| `status` | success / fail |
-| `error` | Error message if failed |
-| `warmup` | true / false |
+| `timestamp_ns` | Monotonic start timestamp (nanoseconds since system boot) |
+| `operation` | Operation type: PUT, GET, or DELETE |
+| `filename` | Name of the test file (e.g., file_0001.bin) |
+| `size_bytes` | File size in bytes |
+| `latency_ns` | **Total completion time** of the command execution in nanoseconds |
+| `status` | Operation result: success or fail |
+| `error` | Error message from stderr if operation failed (empty if successful) |
+| `warmup` | Whether this was a warmup operation: true or false |
+
+### Field Details
+
+- **`latency_ns`**: Measures the complete execution time of the storage command from start to finish, including network transfer, authentication, and storage system processing
+- **`timestamp_ns`**: Uses `time.perf_counter_ns()` for high-precision, monotonic timing that's not affected by system clock adjustments
+- **`size_bytes`**: Actual file size on disk, useful for calculating throughput (bytes/second)
+- **`warmup`**: Warmup operations help "prime" the system and are excluded from performance analysis
 
 ## Performance Features
 
