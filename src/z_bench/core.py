@@ -142,8 +142,11 @@ class BenchmarkRunner:
             raise ValueError(f"No command template provided for {operation} operation")
         
         warmup_files = files[:self.config.warmup]
+        print(f"Running {len(warmup_files)} warmup operations...")
         
-        for filepath in warmup_files:
+        for i, filepath in enumerate(warmup_files, 1):
+            print(f"\rWarmup {i}/{len(warmup_files)}: {filepath.name}", end="", flush=True)
+            
             cmd = cmd_template.replace('{file}', str(filepath))
             success, error, latency_ns = self.execute_command(cmd, filepath.name)
             
@@ -159,6 +162,8 @@ class BenchmarkRunner:
             }
             
             self.log_result(result)
+        
+        print()  # New line after progress
     
     def run_operation(self, operation: str, files: List[Path], is_warmup: bool = False) -> None:
         """Run benchmark operations and collect timing data."""
@@ -166,7 +171,17 @@ class BenchmarkRunner:
         if not cmd_template:
             raise ValueError(f"No command template provided for {operation} operation")
         
-        for filepath in files:
+        print(f"Running {operation.upper()} benchmark on {len(files)} files...")
+        
+        for i, filepath in enumerate(files, 1):
+            # Simple progress indicator
+            percent = (i * 100) // len(files)
+            bar_length = 30
+            filled_length = (percent * bar_length) // 100
+            bar = '█' * filled_length + '░' * (bar_length - filled_length)
+            
+            print(f"\r[{bar}] {percent:3d}% ({i}/{len(files)}) {filepath.name}", end="", flush=True)
+            
             cmd = cmd_template.replace('{file}', str(filepath))
             success, error, latency_ns = self.execute_command(cmd, filepath.name)
             
@@ -184,7 +199,10 @@ class BenchmarkRunner:
             self.log_result(result)
             
             if not success:
+                print()  # New line before error
                 raise RuntimeError(f"Command failed: {error}")
+        
+        print()  # New line after progress
     
     def execute_command(self, cmd: str, filename: str) -> Tuple[bool, str, int]:
         """Execute a single command and measure timing."""

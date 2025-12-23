@@ -62,16 +62,14 @@ Examples:
         parser_obj.add_argument('--put-cmd', help='PUT command template')
         parser_obj.add_argument('--get-cmd', help='GET command template')
         parser_obj.add_argument('--del-cmd', help='DELETE command template')
-    
-    # Global options
-    parser.add_argument('--out', type=Path, default='results.csv',
-                       help='Output file (CSV or JSONL)')
-    parser.add_argument('--warmup', type=int, default=3,
-                       help='Number of warm-up operations per type')
-    parser.add_argument('--wait', type=int, default=5,
-                       help='Wait time between phases (seconds)')
-    parser.add_argument('--no-log', action='store_true',
-                       help='Disable logging for ultra-low-overhead timing')
+        parser_obj.add_argument('--out', type=Path, default='results.csv',
+                               help='Output file (CSV or JSONL)')
+        parser_obj.add_argument('--warmup', type=int, default=3,
+                               help='Number of warm-up operations per type')
+        parser_obj.add_argument('--wait', type=int, default=5,
+                               help='Wait time between phases (seconds)')
+        parser_obj.add_argument('--no-log', action='store_true',
+                               help='Disable logging for ultra-low-overhead timing')
     parser.add_argument('--reuse-files', action='store_true',
                        help='Skip file generation if files exist (--ALL mode)')
     
