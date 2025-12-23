@@ -40,10 +40,10 @@ z-bench generate --output-dir ./testfiles --file-size 10MB --total-size 1GB
 z-bench benchmark --op put --input-dir ./testfiles --put-cmd "aws s3 cp {file} s3://<bucket>/" --out results.csv
 
 # GET benchmark  
-z-bench benchmark --op get --input-dir ./testfiles --get-cmd "aws s3 cp s3://<bucket>/{file} ./downloads/" --out results.csv
+z-bench benchmark --op get --input-dir ./testfiles --get-cmd "aws s3 cp s3://<bucket>/{filename} ./downloads/" --out results.csv
 
 # DELETE benchmark
-z-bench benchmark --op delete --input-dir ./testfiles --del-cmd "aws s3 rm s3://<bucket>/{file}" --out results.csv
+z-bench benchmark --op delete --input-dir ./testfiles --del-cmd "aws s3 rm s3://<bucket>/{filename}" --out results.csv
 ```
 
 ### 3. Full Cycle Benchmark
@@ -111,13 +111,19 @@ Combines generation and all benchmark operations with automatic sequencing.
 
 Use placeholders in command templates:
 
-- `{file}` - **Automatic replacement** with actual file path by z-bench
+- `{file}` - **Full file path** (e.g., `./testfiles/file_0001.bin`) - use for PUT operations
+- `{filename}` - **Just filename** (e.g., `file_0001.bin`) - use for GET/DELETE operations
 - `<bucket>` - **Manual replacement** required - replace with your actual bucket name
 
+### Usage by Operation:
+- **PUT**: Use `{file}` to read from local filesystem
+- **GET**: Use `{filename}` to match S3 object keys
+- **DELETE**: Use `{filename}` to match S3 object keys
+
 Examples:
-- AWS S3: `aws s3 cp {file} s3://my-actual-bucket/`
-- MinIO: `mc cp {file} myminio/my-bucket/`
-- Azure: `az storage blob upload --file {file} --container my-container`
+- PUT: `aws s3 cp {file} s3://my-bucket/`
+- GET: `aws s3 cp s3://my-bucket/{filename} ./downloads/`
+- DELETE: `aws s3 rm s3://my-bucket/{filename}`
 
 ## Output Format
 
@@ -159,8 +165,8 @@ z-bench --ALL \
   --file-size 50MB \
   --total-size 2GB \
   --put-cmd "aws s3 cp {file} s3://my-test-bucket/" \
-  --get-cmd "aws s3 cp s3://my-test-bucket/{file} ./downloads/" \
-  --del-cmd "aws s3 rm s3://my-test-bucket/{file}" \
+  --get-cmd "aws s3 cp s3://my-test-bucket/{filename} ./downloads/" \
+  --del-cmd "aws s3 rm s3://my-test-bucket/{filename}" \
   --out s3-benchmark.csv \
   --warmup 5 \
   --wait 10
