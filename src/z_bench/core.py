@@ -339,8 +339,36 @@ class ZBenchmarker:
     def run_full_cycle(self) -> None:
         """Run complete benchmark cycle (--ALL mode)."""
         print("Running full benchmark cycle")
-        # TODO: Implement full cycle mode
-        pass
+        
+        # Determine which files to use
+        if self.config.input_dir and self.config.input_dir.exists():
+            # Use existing files
+            files = list(self.config.input_dir.glob('*.bin'))
+            if not files:
+                raise ValueError(f"No .bin files found in {self.config.input_dir}")
+            files.sort()
+            print(f"Using {len(files)} existing files from {self.config.input_dir}")
+        else:
+            # Generate new files
+            if not self.config.output_dir or not self.config.file_size or not self.config.total_size:
+                raise ValueError("Must provide --output-dir, --file-size, and --total-size for file generation, or --input-dir for existing files")
+            
+            if self.config.reuse_files and self.config.output_dir.exists():
+                existing_files = list(self.config.output_dir.glob('*.bin'))
+                if existing_files:
+                    files = sorted(existing_files)
+                    print(f"Reusing {len(files)} existing files from {self.config.output_dir}")
+                else:
+                    files = self.file_generator.generate_files()
+            else:
+                files = self.file_generator.generate_files()
+        
+        # TODO: Implement full benchmark sequence
+        # 1. PUT warm-up and benchmark
+        # 2. Wait
+        # 3. GET warm-up and benchmark  
+        # 4. Wait
+        # 5. DELETE warm-up and benchmark
     
     def validate_commands(self) -> None:
         """Validate that required commands are provided for --ALL mode."""

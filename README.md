@@ -49,7 +49,19 @@ z-bench benchmark --op delete --input-dir ./testfiles --del-cmd "aws s3 rm s3://
 ### 3. Full Cycle Benchmark
 
 ```bash
-z-bench --ALL --output-dir ./testfiles --file-size 10MB --total-size 1GB --out results.csv
+# Generate new files and run full cycle
+z-bench --ALL --output-dir ./testfiles --file-size 10MB --total-size 1GB \
+  --put-cmd "aws s3 cp {file} s3://<bucket>/" \
+  --get-cmd "aws s3 cp s3://<bucket>/{filename} ./downloads/" \
+  --del-cmd "aws s3 rm s3://<bucket>/{filename}" \
+  --out results.csv
+
+# Use existing files and run full cycle
+z-bench --ALL --input-dir ./existing-files \
+  --put-cmd "aws s3 cp {file} s3://<bucket>/" \
+  --get-cmd "aws s3 cp s3://<bucket>/{filename} ./downloads/" \
+  --del-cmd "aws s3 rm s3://<bucket>/{filename}" \
+  --out results.csv
 ```
 
 **Note:** Replace `<bucket>` with your actual bucket name in the command templates.
@@ -105,6 +117,13 @@ z-bench --ALL [OPTIONS]
 
 Combines generation and all benchmark operations with automatic sequencing.
 
+- `--input-dir DIR` - Use existing files (skips generation)
+- `--output-dir DIR` - Directory for generated files (if not using --input-dir)
+- `--file-size SIZE` - Size per file (for generation)
+- `--total-size SIZE` - Total dataset size (for generation)
+- `--put-cmd CMD` - PUT command template
+- `--get-cmd CMD` - GET command template
+- `--del-cmd CMD` - DELETE command template
 - `--reuse-files` - Skip file generation if files already exist
 
 ## Command Templates
@@ -157,13 +176,26 @@ Results are logged per-operation with the following fields:
 
 ## Examples
 
-### AWS S3 Full Benchmark
+### AWS S3 Full Benchmark (Generate Files)
 
 ```bash
 z-bench --ALL \
   --output-dir ./testfiles \
   --file-size 50MB \
   --total-size 2GB \
+  --put-cmd "aws s3 cp {file} s3://my-test-bucket/" \
+  --get-cmd "aws s3 cp s3://my-test-bucket/{filename} ./downloads/" \
+  --del-cmd "aws s3 rm s3://my-test-bucket/{filename}" \
+  --out s3-benchmark.csv \
+  --warmup 5 \
+  --wait 10
+```
+
+### AWS S3 Full Benchmark (Use Existing Files)
+
+```bash
+z-bench --ALL \
+  --input-dir ./existing-testfiles \
   --put-cmd "aws s3 cp {file} s3://my-test-bucket/" \
   --get-cmd "aws s3 cp s3://my-test-bucket/{filename} ./downloads/" \
   --del-cmd "aws s3 rm s3://my-test-bucket/{filename}" \

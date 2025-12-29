@@ -76,6 +76,8 @@ Examples:
     # Full cycle mode options
     parser.add_argument('--output-dir', type=Path,
                        help='Directory for generated files (--ALL mode)')
+    parser.add_argument('--input-dir', type=Path,
+                       help='Directory with existing files (--ALL mode, skips generation)')
     parser.add_argument('--file-size',
                        help='Size per file (--ALL mode)')
     parser.add_argument('--total-size',
@@ -109,8 +111,10 @@ def create_config(args: argparse.Namespace) -> BenchmarkConfig:
     config.get_cmd = args.get_cmd
     config.del_cmd = args.del_cmd
     
-    # Set input_dir for benchmark mode
-    if hasattr(args, 'input_dir'):
+    # Set input_dir for benchmark mode or --ALL mode
+    if hasattr(args, 'input_dir') and args.input_dir:
+        config.input_dir = args.input_dir
+    elif args.ALL and args.input_dir:
         config.input_dir = args.input_dir
     
     return config
