@@ -369,6 +369,43 @@ class ZBenchmarker:
         # 3. GET warm-up and benchmark  
         # 4. Wait
         # 5. DELETE warm-up and benchmark
+        
+        # Validate that all required commands are provided
+        if not all([self.config.put_cmd, self.config.get_cmd, self.config.del_cmd]):
+            raise ValueError("--ALL mode requires --put-cmd, --get-cmd, and --del-cmd")
+        
+        # Run PUT benchmark
+        print("\n=== PUT Phase ===")
+        self.benchmark_runner.run_warmup('put', files)
+        self.benchmark_runner.run_operation('put', files)
+        
+        # Wait between phases
+        if self.config.wait > 0:
+            print(f"\nWaiting {self.config.wait} seconds...")
+            time.sleep(self.config.wait)
+        
+        # Run GET benchmark
+        print("\n=== GET Phase ===")
+        self.benchmark_runner.run_warmup('get', files)
+        self.benchmark_runner.run_operation('get', files)
+        
+        # Wait between phases
+        if self.config.wait > 0:
+            print(f"\nWaiting {self.config.wait} seconds...")
+            time.sleep(self.config.wait)
+        
+        # Run DELETE benchmark
+        print("\n=== DELETE Phase ===")
+        self.benchmark_runner.run_warmup('delete', files)
+        self.benchmark_runner.run_operation('delete', files)
+        
+        # Write all results
+        if self.output_writer:
+            for result in self.benchmark_runner.results:
+                self.output_writer.write_result(result)
+            self.output_writer.flush()
+        
+        print(f"\nCompleted full benchmark cycle with {len(files)} files")
     
     def validate_commands(self) -> None:
         """Validate that required commands are provided for --ALL mode."""
