@@ -163,6 +163,10 @@ class BenchmarkRunner:
             }
             
             self.log_result(result)
+            
+            # Raise warning on failure but continue
+            if not success:
+                print(f"\n[WARNING] Warmup operation failed for {filepath.name}: {error}")
         
         print()  # New line after progress
     
@@ -200,9 +204,9 @@ class BenchmarkRunner:
             
             self.log_result(result)
             
+            # Raise warning on failure but continue
             if not success:
-                print()  # New line before error
-                raise RuntimeError(f"Command failed: {error}")
+                print(f"\n[WARNING] Operation failed for {filepath.name}: {error}")
         
         print()  # New line after progress
     
